@@ -1,0 +1,71 @@
+.chessboard-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  aspect-ratio: 1 / 1; /* Force square aspect ratio */
+}
+
+/* Make the chessboard responsive */
+#main-board {
+  width: 100% !important;
+  height: 100% !important; /* Set to 100% to maintain square aspect ratio */
+  max-height: 450px; /* Limit maximum height */
+}
+
+/* Ensure the board container adapts to viewport size */
+@media (max-width: 768px) {
+  .chessboard-container {
+    max-width: 90vw;
+    max-height: 90vw;
+  }
+}
+
+.thinking-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: pulse 1.5s infinite;
+}
+
+.thinking-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

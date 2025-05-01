@@ -1,0 +1,335 @@
+:root {
+  --primary-color: #4a6fa5;
+  --secondary-color: #166088;
+  --accent-color: #2c974b;
+  --background-color: #f5f7fa;
+  --dark-color: #333;
+  --light-color: #fff;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--background-color);
+  color: var(--dark-color);
+  line-height: 1.6;
+  margin: 0; /* Reset body margin */
+  padding: 0; /* Reset body padding */
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  margin-top: 0; /* Ensure no top margin */
+}
+
+.header {
+  background-color: var(--primary-color);
+  color: var(--light-color);
+  text-align: center;
+  padding: 1rem 0;
+  box-shadow: var(--box-shadow);
+  position: sticky; /* Make header sticky */
+  top: 0; /* Stick to the top */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
+.header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.header p {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.main {
+  flex: 1;
+  padding: 1rem;
+  max-width: 100%; /* Allow full width */
+  margin: 0 auto;
+  overflow-y: auto; /* Allow vertical scrolling */
+}
+
+.game-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .game-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .board-container {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Additional media query for smaller screens */
+@media (max-width: 768px) {
+  .main {
+    padding: 0.5rem;
+  }
+  
+  .board-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .model-selector {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Make sure the chess board is responsive */
+.chessboard-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.board-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--light-color);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.board-controls {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid #eee;
+}
+
+.board-controls button {
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.board-controls button:hover {
+  background-color: var(--secondary-color);
+}
+
+.board-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.visualization-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.model-controls, 
+.evaluation-container, 
+.heatmap-container {
+  background-color: var(--light-color);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.model-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.model-card {
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: var(--border-radius);
+  background-color: #f9f9f9;
+}
+
+.model-card h4 {
+  margin-bottom: 0.5rem;
+  color: var(--secondary-color);
+}
+
+.model-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.model-actions button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.model-actions button:nth-child(2) {
+  background-color: var(--accent-color);
+}
+
+.training-status {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  background-color: #f0f7ff;
+  border-left: 4px solid var(--accent-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.search-controls {
+  background-color: var(--light-color);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-controls select {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.current-evaluation {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f0f7ff;
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.eval-score {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--secondary-color);
+}
+
+.heatmap-selector {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.heatmap-selector select {
+  padding: 0.3rem 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.evaluation-graph {
+  text-align: center;
+}
+
+.evaluation-graph h3 {
+  margin-bottom: 1rem;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 0 0.5rem;
+}
+
+.legend-color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  border-radius: 2px;
+}
+
+.position-heatmap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.footer {
+  background-color: var(--primary-color);
+  color: var(--light-color);
+  text-align: center;
+  padding: 1rem 0;
+  margin-top: 2rem;
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0;
+  text-align: center;
+  height: 100vh; /* Ensure root takes full viewport height */
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
