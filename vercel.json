@@ -10,6 +10,5 @@
       "dest": "/sitemap.xml"
     }
   ],
-  "version": 2,
-  "ogImage": "public/chess-ai-preview.png"
+  "version": 2
 }
