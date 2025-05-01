@@ -396,7 +396,7 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>Chess AI Showcase</h1>
+        <h1>Chess AI</h1>
         <p>Simplified Chess AI with basic position evaluation</p>
       </header>
       
@@ -518,7 +518,7 @@ function App() {
       
       <footer className="footer">
         <p>
-          Chess AI Showcase - Simplified version for better performance
+          Chess AI - Simplified version for better performance
         </p>
       </footer>
     </div>

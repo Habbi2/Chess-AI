@@ -6,24 +6,94 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
   aspect-ratio: 1 / 1; /* Force square aspect ratio */
+  overflow: hidden;
 }
 
-/* Make the chessboard responsive */
+/* Chess board styling */
 #main-board {
   width: 100% !important;
   height: 100% !important; /* Set to 100% to maintain square aspect ratio */
-  max-height: 450px; /* Limit maximum height */
+  max-height: 550px; /* Limit maximum height */
+}
+
+/* Custom board colors for dark theme */
+/* We'll target the square classes that the chess.js library likely uses */
+.chessboard-container .square-light {
+  background-color: #ebd8b7 !important; /* Light maple wood color */
+  color: #654321 !important;
+}
+
+.chessboard-container .square-dark {
+  background-color: #8B4513 !important; /* Dark mahogany color */
+  color: #ebd8b7 !important;
+}
+
+/* Add subtle wood grain texture to the squares */
+.chessboard-container .square-light::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23654321' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.chessboard-container .square-dark::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ebd8b7' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Custom styling for chess pieces */
+.chessboard-container .piece {
+  filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.4));
+  transition: filter 0.3s ease, transform 0.2s ease;
+}
+
+.chessboard-container .piece:hover {
+  filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.6));
+  transform: scale(1.05);
+}
+
+/* Highlight possible move squares */
+.chessboard-container .square-highlight {
+  box-shadow: inset 0 0 0 4px rgba(218, 165, 32, 0.6) !important;
 }
 
 /* Ensure the board container adapts to viewport size */
 @media (max-width: 768px) {
   .chessboard-container {
-    max-width: 90vw;
-    max-height: 90vw;
+    max-width: 95vw;
+    max-height: 95vw;
   }
+}
+
+/* Animation for board appearance */
+@keyframes boardAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.chessboard-container {
+  animation: boardAppear 0.7s ease-out forwards;
 }
 
 .thinking-indicator {
@@ -31,24 +101,28 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 4px;
+  background-color: rgba(34, 34, 34, 0.85);
+  color: #DAA520; /* Gold text */
+  padding: 15px 20px;
+  border-radius: var(--border-radius);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   animation: pulse 1.5s infinite;
+  border: 1px solid #DAA520;
+  font-family: 'Crimson Text', serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
 }
 
 .thinking-spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(218, 165, 32, 0.2);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: #DAA520;
   animation: spin 1s ease-in-out infinite;
 }
 
@@ -57,7 +131,8 @@
     opacity: 0.7;
   }
   50% {
-    opacity: 0.9;
+    opacity: 0.95;
+    box-shadow: 0 4px 16px rgba(218, 165, 32, 0.4);
   }
   100% {
     opacity: 0.7;
@@ -68,4 +143,17 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Coordinate labels for chess board (if needed) */
+.coordinate-dark {
+  color: #ebd8b7 !important;
+  font-family: 'Crimson Text', serif;
+  font-weight: bold;
+}
+
+.coordinate-light {
+  color: #8B4513 !important;
+  font-family: 'Crimson Text', serif;
+  font-weight: bold;
 }

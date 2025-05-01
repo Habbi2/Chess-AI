@@ -1,7 +1,22 @@
+/* Google Fonts Import - Crimson Text is a great serif font for a classic chess look */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
 /* Global CSS Reset and Base Styles */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* Classic chess theme colors */
+  --primary-color: #8B4513;  /* Wood brown */
+  --secondary-color: #654321; /* Dark brown */
+  --accent-color: #DAA520;   /* Gold accent */
+  --background-color: #2e2e2e; /* Dark background */
+  --dark-color: #222;        /* Nearly black */
+  --light-color: #f0e9d2;    /* Cream/ivory */
+  --text-color: #e0e0e0;     /* Light gray text */
+  --border-radius: 8px;
+  --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  --wood-gradient: linear-gradient(135deg, #8B4513, #654321);
+  
+  font-family: 'Crimson Text', serif;
+  line-height: 1.6;
   font-weight: 400;
 
   font-synthesis: none;
@@ -19,6 +34,8 @@
 html, body {
   width: 100%;
   height: 100%;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 body {
@@ -27,82 +44,117 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 #root {
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  font-weight: 600;
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.3s;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
+
 a:hover {
-  color: #535bf2;
+  color: #ffc554;
+  text-decoration: underline;
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 2.8em;
+  line-height: 1.2;
   margin-bottom: 0.8em;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
 }
 
 h2, h3, h4, h5, h6 {
   margin-bottom: 0.5em;
+  color: var(--accent-color);
+  font-weight: 600;
 }
 
 button {
   border-radius: 8px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  padding: 0.7em 1.4em;
   font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-weight: 600;
+  font-family: 'Crimson Text', serif;
+  background: linear-gradient(to bottom, var(--accent-color), #b8860b);
+  color: var(--dark-color);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
 }
+
 button:hover {
-  opacity: 0.9;
-  border-color: #646cff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent-color);
 }
+
 button:active {
   transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 3px solid rgba(218, 165, 32, 0.4);
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--dark-color);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: var(--primary-color);
+  border-radius: 5px;
+  border: 2px solid var(--dark-color);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--accent-color);
 }
 
+/* Animation for elements to fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* Remove the light mode override - we want our dark chess theme to be consistent */
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: var(--text-color);
+    background-color: var(--background-color);
   }
+  
   a:hover {
-    color: #747bff;
+    color: #ffc554;
   }
+  
   button {
-    background-color: #f9f9f9;
+    background: linear-gradient(to bottom, var(--accent-color), #b8860b);
   }
 }
