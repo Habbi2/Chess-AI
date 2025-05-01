@@ -493,7 +493,12 @@ function App() {
                 {availableModels.map((modelMetadata) => (
                   <div key={modelMetadata.id} className="model-card">
                     <h4>{modelMetadata.name}</h4>
-                    <p>Evaluation: Basic Heuristic</p>
+                    <p>Evaluation: {
+                      modelMetadata.id === 'basic' ? 'Basic Heuristic' :
+                      modelMetadata.id === 'supervised' ? 'Neural Network' :
+                      modelMetadata.id === 'reinforcement' ? 'Self-play + Tree Search' :
+                      'Unknown Method'
+                    }</p>
                     <div className="model-actions">
                       <button onClick={() => dispatch({ type: 'CHANGE_MODEL', modelMetadata })}>
                         Select

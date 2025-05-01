@@ -19,12 +19,51 @@ self.onmessage = async (event) => {
         // Initialize model with provided metadata
         model = new ChessEvaluationModel(payload.modelMetadata);
         
-        // Try to load model if path is provided
-        if (payload.modelPath) {
-          await model.loadModel(payload.modelPath);
-        } else {
-          // Create a new model if no path provided
-          model.createModel();
+        // Initialize model based on its type
+        switch (payload.modelMetadata.trainingMethod) {
+          case 'supervised':
+            if (payload.modelMetadata.id === 'basic') {
+              // Basic heuristic model
+              model.createModel();
+              console.log('[Worker] Basic heuristic model initialized');
+            } else {
+              // Supervised learning model
+              model.createModel();
+              try {
+                if (payload.modelPath) {
+                  await model.loadModel(payload.modelPath);
+                } else {
+                  // Try loading from IndexedDB
+                  await model.loadModel('indexeddb://chess-supervised-model');
+                }
+                console.log('[Worker] Supervised model loaded successfully');
+              } catch (e) {
+                console.log('[Worker] No pre-trained model found, using new model');
+              }
+            }
+            break;
+        
+          case 'reinforcement':
+            // Self-play model with enhanced search
+            model.createModel();
+            try {
+              if (payload.modelPath) {
+                await model.loadModel(payload.modelPath);
+              } else {
+                // Try loading from IndexedDB
+                await model.loadModel('indexeddb://chess-selfplay-model');
+              }
+              console.log('[Worker] Self-play model loaded successfully');
+            } catch (e) {
+              console.log('[Worker] No pre-trained self-play model found, using new model with advanced search');
+              // Enable advanced search parameters for reinforcement learning model
+              model.enableAdvancedSearch();
+            }
+            break;
+          
+          default:
+            model.createModel();
+            console.log('[Worker] Created default model');
         }
         
         self.postMessage({ type: 'MODEL_READY', success: true });
@@ -51,8 +90,22 @@ self.onmessage = async (event) => {
         }
         
         const game = new Chess(payload.fen);
-        const depth = payload.depth || 2;
-        const suggestions = await model.suggestMove(game, depth);
+        
+        // Adjust depth based on model type for better performance
+        let effectiveDepth = payload.depth || 1;
+        
+        if (model.trainingMethod === 'reinforcement') {
+          // Self-play models can handle deeper search
+          effectiveDepth = Math.min(effectiveDepth, 3);
+        } else if (model.id !== 'basic') {
+          // Supervised models use moderate depth
+          effectiveDepth = Math.min(effectiveDepth, 2);
+        } else {
+          // Basic model uses shallow depth
+          effectiveDepth = Math.min(effectiveDepth, 1);
+        }
+        
+        const suggestions = await model.suggestMove(game, effectiveDepth);
         
         self.postMessage({ 
           type: 'MOVE_SUGGESTIONS', 
@@ -76,15 +129,47 @@ self.onmessage = async (event) => {
         });
         break;
         
+      case 'TRAIN_MODEL':
+        if (!model) {
+          throw new Error('Model not initialized');
+        }
+        
+        // Train the model with provided data
+        const { positions, evaluations, epochs, batchSize } = payload;
+        const trainingResult = await model.trainModel(
+          positions, 
+          evaluations, 
+          epochs || 10, 
+          batchSize || 32
+        );
+        
+        // Save the model based on its type
+        let savePath = 'indexeddb://chess-model';
+        if (model.trainingMethod === 'supervised') {
+          savePath = 'indexeddb://chess-supervised-model';
+        } else if (model.trainingMethod === 'reinforcement') {
+          savePath = 'indexeddb://chess-selfplay-model';
+        }
+        
+        await model.saveModel(savePath);
+        
+        self.postMessage({ 
+          type: 'TRAINING_COMPLETE', 
+          result: {
+            loss: trainingResult.history.loss[trainingResult.history.loss.length - 1],
+            savePath
+          }
+        });
+        break;
+        
       default:
-        console.error('Unknown message type:', type);
+        throw new Error(`Unknown message type: ${type}`);
     }
-  } catch (error: unknown) {
-    console.error('Worker error:', error);
+  } catch (error) {
+    console.error('[Worker] Error handling message:', error);
     self.postMessage({ 
       type: 'ERROR', 
-      error: error instanceof Error ? error.message : 'Unknown error',
-      originalRequest: { type, payload }
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 };

@@ -266,11 +266,49 @@ export class ChessEvaluationModel implements AIModel {
   public id: string;
   public name: string;
   public version: string;
+  public trainingMethod: 'supervised' | 'reinforcement' | 'hybrid';
+  
+  // Advanced search parameters
+  private useAdvancedSearch: boolean = false;
+  private mctsIterations: number = 400;
+  private mctsTimeLimit: number = 1000;
+  private minimaxDepth: number = 2;
+  
+  // Enhanced evaluation parameters
+  private blendFactor: number = 0.5; // How much to blend heuristic with neural network (0-1)
   
   constructor(modelMetadata: ModelMetadata) {
     this.id = modelMetadata.id;
     this.name = modelMetadata.name;
     this.version = modelMetadata.version;
+    this.trainingMethod = modelMetadata.trainingMethod;
+  }
+  
+  /**
+   * Enable advanced search algorithms for stronger models
+   */
+  public enableAdvancedSearch(options?: {
+    mctsIterations?: number;
+    mctsTimeLimit?: number;
+    minimaxDepth?: number;
+    blendFactor?: number;
+  }): void {
+    this.useAdvancedSearch = true;
+    
+    // Apply any custom options
+    if (options) {
+      if (options.mctsIterations) this.mctsIterations = options.mctsIterations;
+      if (options.mctsTimeLimit) this.mctsTimeLimit = options.mctsTimeLimit;
+      if (options.minimaxDepth) this.minimaxDepth = options.minimaxDepth;
+      if (options.blendFactor !== undefined) this.blendFactor = options.blendFactor;
+    }
+    
+    // For reinforcement learning models, increase iterations
+    if (this.trainingMethod === 'reinforcement') {
+      this.mctsIterations = 600; // More iterations for self-play model
+      this.minimaxDepth = 3;     // Deeper search
+      this.blendFactor = 0.8;    // More neural network, less heuristic
+    }
   }
   
   /**

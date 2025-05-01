@@ -16,7 +16,7 @@ let isModelInitialized = false;
  * Initialize the model
  */
 export async function initModel(modelMetadata: ModelMetadata): Promise<void> {
-  if (isModelInitialized && model) {
+  if (isModelInitialized && model && model.id === modelMetadata.id) {
     return Promise.resolve();
   }
   
@@ -24,11 +24,52 @@ export async function initModel(modelMetadata: ModelMetadata): Promise<void> {
     // Create new model instance
     model = new ChessEvaluationModel(modelMetadata);
     
-    // Initialize a simple model to avoid performance issues
-    model.createModel();
+    // Initialize based on model type
+    switch (modelMetadata.trainingMethod) {
+      case 'supervised':
+        if (modelMetadata.id === 'basic') {
+          // Basic heuristic model - just create the model
+          model.createModel();
+          console.log('Basic heuristic model initialized');
+        } else {
+          // Supervised learning model - load pre-trained weights
+          await model.createModel();
+          try {
+            // Try loading pre-trained model for supervised learning
+            await model.loadModel('indexeddb://chess-supervised-model');
+            console.log('Supervised learning model loaded from storage');
+          } catch (e) {
+            console.log('No pre-trained supervised model found, using default weights');
+          }
+        }
+        break;
+      
+      case 'reinforcement':
+        // Self-play (reinforcement learning) model
+        await model.createModel();
+        try {
+          // Try loading self-play model if available
+          await model.loadModel('indexeddb://chess-selfplay-model');
+          console.log('Self-play model loaded from storage');
+        } catch (e) {
+          console.log('No pre-trained self-play model found, using default weights');
+          // Create a stronger baseline for self-play model
+          if (model.trainingMethod === 'reinforcement') {
+            // Initialize with more advanced MCTS settings
+            model.enableAdvancedSearch();
+            console.log('Advanced tree search enabled for self-play model');
+          }
+        }
+        break;
+      
+      default:
+        // Default to basic model
+        model.createModel();
+        console.log('Falling back to basic model');
+    }
     
     isModelInitialized = true;
-    console.log('Chess model initialized successfully');
+    console.log(`Chess model ${modelMetadata.name} initialized successfully`);
     return Promise.resolve();
   } catch (error) {
     console.error('Error initializing chess model:', error);
@@ -37,15 +78,28 @@ export async function initModel(modelMetadata: ModelMetadata): Promise<void> {
 }
 
 /**
- * Evaluate a position using simplified heuristics instead of neural network
+ * Evaluate a position using the appropriate method based on the selected model
  */
 export async function evaluatePosition(fen: string): Promise<number> {
-  // Use simpler heuristic evaluation for better performance
-  return Promise.resolve(evaluatePositionHeuristic(fen));
+  if (!model) {
+    // Fallback to heuristic if no model is available
+    return Promise.resolve(evaluatePositionHeuristic(fen));
+  }
+  
+  try {
+    // Use the model's evaluation method which will use either:
+    // - Pure heuristic (basic model)
+    // - Neural network with supervised learning
+    // - Advanced search with self-play model
+    return await model.evaluatePosition(fen);
+  } catch (error: unknown) {
+    console.error('Error in model evaluation, falling back to heuristic:', error);
+    return Promise.resolve(evaluatePositionHeuristic(fen));
+  }
 }
 
 /**
- * Suggest moves with reduced complexity
+ * Suggest moves with appropriate complexity based on the active model
  */
 export async function suggestMoves(fen: string, depth: number = 1): Promise<MoveEvaluation[]> {
   if (!model) {
@@ -63,12 +117,36 @@ export async function suggestMoves(fen: string, depth: number = 1): Promise<Move
   try {
     const game = new Chess(fen);
     
-    // Use a reduced depth to improve performance
-    const limitedDepth = Math.min(depth, 1);
+    // Different models can handle different search depths effectively
+    let effectiveDepth = depth;
     
-    // Get move suggestions with reduced computation
     if (model) {
-      return model.suggestMove(game, limitedDepth);
+      // Adjust search depth based on the model type
+      switch (model.trainingMethod) {
+        case 'reinforcement':
+          // Self-play model can handle deeper search
+          effectiveDepth = Math.min(depth, 3); 
+          console.log(`Using self-play model with depth ${effectiveDepth}`);
+          break;
+        
+        case 'supervised':
+          if (model.id === 'supervised') {
+            // Supervised model uses enhanced evaluation but limited depth
+            effectiveDepth = Math.min(depth, 2);
+            console.log(`Using supervised model with depth ${effectiveDepth}`);
+          } else {
+            // Basic model uses simple heuristic with limited depth
+            effectiveDepth = Math.min(depth, 1);
+            console.log(`Using basic heuristic model with depth ${effectiveDepth}`);
+          }
+          break;
+          
+        default:
+          effectiveDepth = Math.min(depth, 1);
+      }
+      
+      // Get move suggestions from the specific model
+      return model.suggestMove(game, effectiveDepth);
     } else {
       // Fallback to simple evaluation if model fails
       const legalMoves = game.moves({ verbose: true });
@@ -97,7 +175,7 @@ export async function suggestMoves(fen: string, depth: number = 1): Promise<Move
       
       return evaluations.slice(0, 5); // Return only top 5 moves for simplicity
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error suggesting moves:', error);
     return [];
   }
@@ -142,7 +220,7 @@ export async function getHeatmap(fen: string, heatmapType: PositionHeatmap['type
         type: heatmapType
       };
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error generating heatmap:', error);
     
     // Return a default empty heatmap

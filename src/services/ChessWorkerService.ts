@@ -122,10 +122,10 @@ function sendMessageToWorker(type: string, payload: any, timeoutMs: number = 300
   if (worker) {
     try {
       worker.postMessage({ type, payload, requestId: id });
-    } catch (error) {
+    } catch (error: unknown) {
       // Handle error on sending message
       pendingPromises.delete(id);
-      return Promise.reject(new Error(`Failed to send message to worker: ${error}`));
+      return Promise.reject(new Error(`Failed to send message to worker: ${error instanceof Error ? error.message : String(error)}`));
     }
   } else {
     // This should not happen, but handle it anyway
