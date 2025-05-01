@@ -220,6 +220,54 @@ function App() {
   const [aiPlaysBlack, setAiPlaysBlack] = useState(true);
   const [modelInitialized, setModelInitialized] = useState(false);
   
+  // Add effect to ensure proper viewport settings
+  useEffect(() => {
+    // Check if viewport meta tag exists
+    let viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement | null;
+    
+    // If it doesn't exist, create it
+    if (!viewportMeta) {
+      viewportMeta = document.createElement('meta') as HTMLMetaElement;
+      viewportMeta.setAttribute('name', 'viewport');
+      document.head.appendChild(viewportMeta);
+    }
+    
+    // Set proper viewport properties with stricter settings to fix specific viewport issues
+    viewportMeta.setAttribute('content', 
+      'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+      
+    // Set a minimum height for the body to ensure footer is visible
+    document.body.style.minHeight = '100vh';
+    document.documentElement.style.height = 'auto';
+    document.documentElement.style.minHeight = '100vh';
+    
+    // Add specific overflow prevention for the specific viewport size issue
+    const meta = document.createElement('style');
+    meta.textContent = `
+      @media screen and (min-width: 760px) and (max-width: 830px) {
+        body, html, #root, .app, .main, .game-container {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+          padding: 0 !important;
+          margin: 0 auto !important;
+          box-sizing: border-box !important;
+        }
+        
+        .board-container {
+          padding: 10px !important;
+        }
+        
+        .chessboard-container {
+          width: 100% !important;
+          max-width: 95% !important;
+          margin: 0 auto !important;
+        }
+      }
+    `;
+    document.head.appendChild(meta);
+  }, []);
+  
   // Initialize the chess model
   useEffect(() => {
     let isComponentMounted = true;

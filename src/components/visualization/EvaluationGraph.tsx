@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import * as d3 from 'd3';
+import React, { useRef, useEffect } from 'react';
 import { ChessPosition } from '../../types/chess';
 
 interface EvaluationGraphProps {
@@ -7,117 +6,176 @@ interface EvaluationGraphProps {
     position: ChessPosition;
     evaluation: number;
   }[];
-  width?: number;
-  height?: number;
 }
 
-const EvaluationGraph: React.FC<EvaluationGraphProps> = ({
-  history,
-  width = 500,
-  height = 200
-}) => {
-  const svgRef = useRef<SVGSVGElement>(null);
+const EvaluationGraph: React.FC<EvaluationGraphProps> = ({ history }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Use canvas for efficient rendering
   useEffect(() => {
-    if (!svgRef.current || history.length === 0) return;
-
-    const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove(); // Clear previous graph
+    if (!canvasRef.current || history.length === 0) return;
     
-    const margin = { top: 20, right: 30, bottom: 30, left: 40 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     
-    const g = svg
-      .append('g')
-      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+    // Get the container width to make it responsive
+    const containerWidth = canvas.parentElement?.clientWidth || 300;
+    const containerHeight = Math.min(containerWidth * 0.6, 200); // Aspect ratio control
+    
+    // Update canvas dimensions to match container
+    canvas.width = containerWidth;
+    canvas.height = containerHeight;
+    
+    // Set styles
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#DAA520';
+    ctx.fillStyle = 'rgba(218, 165, 32, 0.2)';
+    
+    // Find the min and max evaluations
+    let maxEval = 3;
+    let minEval = -3;
+    
+    history.forEach(item => {
+      if (item.evaluation > maxEval) maxEval = item.evaluation;
+      if (item.evaluation < minEval) minEval = item.evaluation;
+    });
+    
+    // Add some padding to the range
+    maxEval += 1;
+    minEval -= 1;
+    
+    // Calculate scale factors
+    const xScale = canvas.width / (Math.max(1, history.length - 1));
+    const yScale = canvas.height / (maxEval - minEval);
+    
+    // Draw centerline (0 evaluation)
+    const y0 = canvas.height - ((0 - minEval) * yScale);
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.setLineDash([5, 5]);
+    ctx.moveTo(0, y0);
+    ctx.lineTo(canvas.width, y0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Draw the evaluation line
+    ctx.beginPath();
+    ctx.strokeStyle = '#DAA520';
+    
+    history.forEach((item, index) => {
+      const x = index * xScale;
+      const y = canvas.height - ((item.evaluation - minEval) * yScale);
       
-    // X scale for move numbers
-    const xScale = d3.scaleLinear()
-      .domain([0, Math.max(9, history.length - 1)]) // At least 10 moves wide
-      .range([0, innerWidth]);
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
     
-    // Y scale for evaluation score
-    const yScale = d3.scaleLinear()
-      .domain([-10, 10]) // Standard evaluation range
-      .range([innerHeight, 0]);
+    ctx.stroke();
     
-    // Create X and Y axes
-    const xAxis = d3.axisBottom(xScale).ticks(5);
-    const yAxis = d3.axisLeft(yScale).ticks(5);
+    // Draw the fill under the line
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(218, 165, 32, 0.2)';
     
-    // Add the X axis
-    g.append('g')
-      .attr('transform', `translate(0, ${innerHeight/2})`)
-      .call(xAxis)
-      .append('text')
-      .attr('x', innerWidth / 2)
-      .attr('y', 30)
-      .attr('fill', 'black')
-      .text('Move Number');
+    // Start at the bottom left
+    const startX = 0;
+    const startY = canvas.height - ((history[0].evaluation - minEval) * yScale);
+    ctx.moveTo(startX, canvas.height); // bottom left corner
+    ctx.lineTo(startX, startY);
     
-    // Add the Y axis
-    g.append('g')
-      .call(yAxis)
-      .append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', -30)
-      .attr('x', -innerHeight / 2)
-      .attr('fill', 'black')
-      .attr('text-anchor', 'middle')
-      .text('Evaluation');
+    // Draw the line path again
+    history.forEach((item, index) => {
+      const x = index * xScale;
+      const y = canvas.height - ((item.evaluation - minEval) * yScale);
+      ctx.lineTo(x, y);
+    });
     
-    // Center line (evaluation = 0)
-    g.append('line')
-      .attr('x1', 0)
-      .attr('y1', innerHeight / 2)
-      .attr('x2', innerWidth)
-      .attr('y2', innerHeight / 2)
-      .attr('stroke', 'gray')
-      .attr('stroke-width', 1)
-      .attr('stroke-dasharray', '4');
+    // Close the path to the bottom right
+    const endX = (history.length - 1) * xScale;
+    ctx.lineTo(endX, canvas.height); // bottom right corner
+    ctx.closePath();
+    ctx.fill();
     
-    // Create the line generator
-    const line = d3.line<{position: ChessPosition, evaluation: number}>()
-      .x((_, i) => xScale(i))
-      .y(d => yScale(d.evaluation))
-      .curve(d3.curveMonotoneX);
+    // Add axis labels
+    ctx.fillStyle = '#e0e0e0';
+    ctx.font = '10px Arial';
     
-    // Add the evaluation line
-    g.append('path')
-      .datum(history)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 2)
-      .attr('d', line);
+    // Y-axis labels (evaluation values)
+    ctx.textAlign = 'left';
+    ctx.fillText(maxEval.toFixed(1), 5, 15);
+    ctx.fillText('0.0', 5, y0 + 4);
+    ctx.fillText(minEval.toFixed(1), 5, canvas.height - 5);
     
-    // Add dots for each position
-    g.selectAll('.dot')
-      .data(history)
-      .enter()
-      .append('circle')
-      .attr('class', 'dot')
-      .attr('cx', (_, i) => xScale(i))
-      .attr('cy', d => yScale(d.evaluation))
-      .attr('r', 4)
-      .attr('fill', (_, i) => i === history.length - 1 ? 'red' : 'steelblue')
-      .append('title') // Add tooltip
-      .text(d => `Move ${d.position.moveNumber}: ${d.evaluation > 0 ? '+' : ''}${d.evaluation.toFixed(2)}`);
+    // X-axis labels (move numbers)
+    if (history.length > 0) {
+      ctx.textAlign = 'right';
+      ctx.fillText(`Move ${history[history.length - 1].position.moveNumber}`, canvas.width - 5, canvas.height - 5);
       
-  }, [history, width, height]);
+      if (history.length > 10) {
+        // Show some intermediate labels
+        const interval = Math.floor(history.length / 5);
+        for (let i = interval; i < history.length; i += interval) {
+          const x = i * xScale;
+          ctx.fillText(`${history[i].position.moveNumber}`, x, canvas.height - 5);
+        }
+      }
+    }
+  }, [history]);
+  
+  // Handle window resize with redraw
+  useEffect(() => {
+    const handleResize = () => {
+      // Force re-render by changing the dependency
+      if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const container = canvas.parentElement;
+        if (container) {
+          const newWidth = container.clientWidth;
+          if (canvas.width !== newWidth) {
+            // This will trigger the rendering effect above
+            canvas.width = newWidth;
+          }
+        }
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="evaluation-graph">
-      <h3>Position Evaluation Over Time</h3>
-      <svg 
-        ref={svgRef} 
-        width={width} 
-        height={height}
-      />
+      <h3>Game Evaluation</h3>
+      <div style={{ 
+        width: '100%', 
+        height: 'auto',
+        position: 'relative',
+        maxWidth: '100%'
+      }}>
+        <canvas 
+          ref={canvasRef}
+          style={{ 
+            width: '100%', 
+            height: 'auto',
+            border: '1px solid rgba(218, 165, 32, 0.3)',
+            borderRadius: '4px',
+            backgroundColor: 'rgba(46, 46, 46, 0.4)'
+          }}
+        />
+      </div>
       <div className="legend">
         <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: 'steelblue' }}></span>
-          <span>Position evaluation (positive = white advantage)</span>
+          <div 
+            className="legend-color"
+            style={{
+              backgroundColor: '#DAA520'
+            }}
+          />
+          <span>Evaluation (positive = White advantage)</span>
         </div>
       </div>
     </div>

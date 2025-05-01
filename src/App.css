@@ -18,32 +18,51 @@
   padding: 0;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  position: relative;
+}
+
 body {
   font-family: 'Crimson Text', 'Palatino Linotype', serif;
   background-color: var(--background-color);
   color: var(--text-color);
   line-height: 1.6;
-  margin: 0;
-  padding: 0;
   background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  overflow-x: hidden;
 }
 
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow-x: hidden;
-  margin-top: 0;
+  width: 100%;
+  position: relative;
 }
 
 .header {
   background: var(--wood-gradient);
   color: var(--light-color);
   text-align: center;
-  padding: 1.5rem 0;
+  padding: 1rem 0;
   box-shadow: var(--box-shadow);
-  position: sticky;
-  top: 0;
+  position: relative; /* Changed from sticky to relative */
+  width: 100%;
   z-index: 1000;
   border-bottom: 3px solid var(--accent-color);
 }
@@ -60,14 +79,17 @@ body {
   font-size: 1.1rem;
   opacity: 0.9;
   font-style: italic;
+  margin-bottom: 0.5rem;
 }
 
 .main {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1rem;
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  overflow-y: auto;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .game-container {
@@ -84,6 +106,10 @@ body {
   .board-container {
     margin-bottom: 2rem;
   }
+
+  .visualization-container {
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -91,30 +117,274 @@ body {
     padding: 1rem;
   }
   
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .header p {
+    font-size: 0.95rem;
+  }
+  
   .board-controls {
     flex-direction: column;
     align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 0;
+  }
+  
+  .board-controls button {
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  .board-controls label {
+    width: 100%;
+    max-width: 320px;
+    padding: 0.5rem;
+    justify-content: center;
+  }
+  
+  .model-selector {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+    margin: 1rem auto 0;
+    padding: 0;
+  }
+  
+  .model-card {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  .visualization-container,
+  .model-controls {
+    padding: 0.8rem;
+  }
+  
+  .footer {
+    width: 100%;
+    max-width: 100vw;
   }
   
   .model-selector {
     grid-template-columns: 1fr;
   }
   
-  .header h1 {
-    font-size: 2rem;
+  .model-card {
+    padding: 1rem;
   }
+  
+  .search-controls {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .model-status {
+    width: 100%;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  
+  .current-evaluation {
+    padding: 0.8rem;
+  }
+  
+  .eval-score {
+    font-size: 1.4rem;
+  }
+  
+  /* For side-by-side game controls on wider phones */
+  .board-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+  
+  .board-controls label:nth-child(n+3) {
+    grid-column: span 2;
+  }
+}
+
+/* For small mobile devices */
+@media (max-width: 480px) {
+  .header {
+    padding: 1rem 0;
+  }
+  
+  .header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .header p {
+    font-size: 0.85rem;
+    margin: 0 1rem;
+  }
+  
+  .main {
+    padding: 0.8rem 0.5rem;
+  }
+  
+  .board-container {
+    padding: 1rem;
+  }
+  
+  .board-controls {
+    grid-template-columns: 1fr;  /* Stack vertically on very small screens */
+    padding: 1rem 0;
+  }
+  
+  .board-controls label:nth-child(n+3) {
+    grid-column: span 1;  /* Reset the span */
+  }
+  
+  .model-card h4 {
+    font-size: 1.1rem;
+  }
+  
+  .model-actions button {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.9rem;
+  }
+  
+  .search-controls label {
+    font-size: 0.9rem;
+  }
+  
+  .evaluation-container, 
+  .model-controls, 
+  .heatmap-container {
+    padding: 1rem;
+  }
+  
+  h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .current-evaluation {
+    margin: 0.8rem 0;
+    font-size: 0.9rem;
+  }
+  
+  .eval-score {
+    font-size: 1.2rem;
+  }
+
+  .footer {
+    padding: 1rem 0;
+    font-size: 0.9rem;
+  }
+
+  /* Smaller spacing for very small screens */
+  .visualization-container {
+    gap: 0.8rem;
+  }
+}
+
+/* For landscape orientation on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .header {
+    padding: 0.5rem 0;
+  }
+  
+  .header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .header p {
+    display: none; /* Hide description in landscape to save space */
+  }
+  
+  .main {
+    padding: 0.5rem;
+  }
+  
+  .footer {
+    padding: 0.5rem 0;
+  }
+  
+  .game-container {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .board-container {
+    padding: 0.5rem;
+    margin-bottom: 0;
+  }
+  
+  .board-controls {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+  }
+
+  .visualization-container {
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+    gap: 0.5rem;
+  }
+}
+
+/* Make page scrollable on very small screens */
+@media (max-height: 600px) {
+  .app {
+    height: auto;
+    min-height: 100vh;
+  }
+}
+
+/* Touch-specific optimizations */
+@media (pointer: coarse) {
+  button, 
+  select, 
+  input[type="checkbox"] {
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+  }
+  
+  .board-controls label {
+    padding: 0.5rem;
+  }
+  
+  select {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Status indicators */
+.status-ready {
+  color: #4CAF50;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.status-loading {
+  color: var(--accent-color);
+  font-weight: bold;
+  animation: pulse 1.5s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
 }
 
 /* Chess board container with styled frame */
 .chessboard-container {
   width: 100%;
-  max-width: 650px;
+  max-width: 550px;
   margin: 0 auto;
-  padding: 15px;
   background: var(--wood-gradient);
-  border: 10px solid var(--secondary-color);
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent overflow */
 }
 
 .board-container {
@@ -122,10 +392,14 @@ body {
   flex-direction: column;
   align-items: center;
   background-color: var(--dark-color);
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   border: 1px solid var(--accent-color);
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .board-controls {
@@ -176,6 +450,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .model-controls, 
@@ -188,11 +466,32 @@ body {
   border: 1px solid var(--accent-color);
 }
 
+.model-controls {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.model-controls h3 {
+  width: 100%;
+  text-align: center;
+  margin: 0 auto 1rem;
+}
+
 .model-selector {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.2rem;
-  margin-top: 1.2rem;
+  margin: 1.2rem auto 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 .model-card {
@@ -201,6 +500,9 @@ body {
   border-radius: var(--border-radius);
   background: linear-gradient(45deg, #2a2a2a, #333333);
   transition: transform 0.3s, box-shadow 0.3s;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .model-card:hover {
@@ -350,17 +652,22 @@ body {
   background: var(--wood-gradient);
   color: var(--light-color);
   text-align: center;
-  padding: 1.5rem 0;
-  margin-top: 2rem;
+  padding: 1rem 0;
+  width: 100%;
+  margin-top: auto; /* Push to bottom when content is short */
   border-top: 3px solid var(--accent-color);
+  position: relative;
+  z-index: 10;
 }
 
 #root {
-  max-width: 1400px;
+  max-width: 100vw; /* Never exceed viewport width */
+  width: 100%;
   margin: 0 auto;
   padding: 0;
   text-align: center;
   height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* Scrollbar styling */
@@ -423,4 +730,137 @@ body {
 .read-the-docs {
   color: var(--light-color);
   opacity: 0.8;
+}
+
+/* Additional specific fix for 900px-ish devices */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .app {
+    width: 100%;
+    max-width: 100vw;
+  }
+  
+  .game-container {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .main {
+    width: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  
+  #root {
+    width: 100%;
+  }
+  
+  .board-container,
+  .visualization-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Fix for small devices */
+html, body, #root {
+  max-width: 100vw !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* Improve scrolling on iOS */
+  width: 100%;
+  position: relative; /* Create a positioning context */
+}
+
+.app {
+  max-width: 100vw !important;
+  width: 100%;
+  overflow-x: hidden;
+  position: relative; /* Establish positioning context */
+  box-sizing: border-box; /* Include padding in width calculation */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media screen and (max-width: 900px) {
+  .app {
+    width: 100%;
+    max-width: 100vw !important;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .main {
+    width: 100%;
+    max-width: 100vw !important;
+    padding: 1rem;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  .game-container {
+    width: 100%;
+    grid-template-columns: 1fr;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  
+  .board-container,
+  .visualization-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden; /* Prevent overflow */
+  }
+  
+  .chessboard-container {
+    max-width: 100%;
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  
+  /* Ensure canvas elements stay within bounds */
+  canvas {
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+}
+
+/* Fix for the brown scrollbar issue on mobile devices */
+@media (max-width: 768px) {
+  .model-controls {
+    padding: 1rem;
+    width: calc(100% - 1rem);
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  
+  /* Center model cards and ensure they don't overflow */
+  .model-selector {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .model-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Footer text fix for smaller devices */
+@media (max-width: 480px) {
+  .footer {
+    font-size: 0.8rem;
+  }
 }

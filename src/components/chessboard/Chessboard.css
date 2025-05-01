@@ -4,19 +4,22 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  max-width: 100%;
+  max-width: 550px; /* Set a reasonable max-width */
   margin: 0 auto;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
-  aspect-ratio: 1 / 1; /* Force square aspect ratio */
-  overflow: hidden;
+  overflow: hidden; /* Changed from visible to hidden to prevent overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
+  aspect-ratio: 1 / 1 !important; /* Force square aspect ratio with !important */
+  height: 0; /* Height is calculated from aspect ratio */
 }
 
 /* Chess board styling */
 #main-board {
   width: 100% !important;
   height: 100% !important; /* Set to 100% to maintain square aspect ratio */
-  max-height: 550px; /* Limit maximum height */
+  max-height: unset; /* Remove max-height restriction */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 /* Custom board colors for dark theme */
@@ -29,6 +32,12 @@
 .chessboard-container .square-dark {
   background-color: #8B4513 !important; /* Dark mahogany color */
   color: #ebd8b7 !important;
+}
+
+/* Enhanced visibility for chess pieces */
+.chessboard-container .piece {
+  filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.4));
+  transition: filter 0.3s ease, transform 0.2s ease;
 }
 
 /* Add subtle wood grain texture to the squares */
@@ -76,7 +85,176 @@
 @media (max-width: 768px) {
   .chessboard-container {
     max-width: 95vw;
-    max-height: 95vw;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Slightly reduced shadow for mobile */ /* Reduce padding to maximize board size */
+    border-width: 6px; /* Thinner border for more space */
+    overflow: hidden; /* Prevent overflow */
+  }
+  
+  .thinking-indicator {
+    padding: 10px 15px;
+    font-size: 0.95rem;
+  }
+  
+  .thinking-spinner {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .chessboard-container .square-light {
+    background-color: #f5e8c8 !important; /* Lighter cream color for better contrast */
+  }
+  
+  .chessboard-container .square-dark {
+    background-color: #6b3500 !important; /* Darker brown for better contrast */
+  }
+  
+  .chessboard-container .piece {
+    filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.6)) contrast(1.1) brightness(1.05);
+    transform-origin: center;
+  }
+  
+  /* Make highlighted squares more visible */
+  .chessboard-container .square-highlight {
+    box-shadow: inset 0 0 0 5px rgba(218, 165, 32, 0.8) !important;
+  }
+}
+
+/* Add specific fix for screens between 480px and 768px (including the 700px problem area) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .chessboard-container {
+    max-width: 90vw;
+    max-height: 90vw; /* Ensure height doesn't exceed width for proper aspect ratio */
+    margin: 10px auto;
+    overflow: hidden; /* Prevent overflow */
+  }
+  
+  .board-inner-container {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1; /* Force square aspect ratio */
+    overflow: hidden; /* Changed from visible to hidden */
+  }
+  
+  #main-board {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: hidden; /* Prevent overflow */
+  }
+}
+
+/* Small devices optimization */
+@media (max-width: 480px) {
+  .chessboard-container {
+    max-width: 95vw;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    border-width: 4px;
+    margin: 0 auto;
+    overflow: hidden; /* Prevent overflow */
+  }
+  
+  /* Make pieces slightly easier to tap on mobile */
+  .chessboard-container .piece {
+    transform-origin: center;
+    filter: drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.7)) contrast(1.15) brightness(1.1);
+    /* Add a subtle outline effect to make pieces stand out more */
+    -webkit-filter: drop-shadow(0px 0px 1px black) drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.7)) contrast(1.15) brightness(1.1);
+  }
+  
+  .thinking-indicator {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border-width: 1px;
+  }
+  
+  .chessboard-container .square-light {
+    background-color: #f7e8c8 !important;
+  }
+  
+  .chessboard-container .square-dark {
+    background-color: #6b3500 !important;
+  }
+  
+  .chessboard-container .piece {
+    filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.6)) contrast(1.1) brightness(1.05);
+  }
+  
+  /* More visible hint arrows on small screens */
+  .arrow {
+    stroke-width: 8px !important; /* Make arrows thicker */
+    opacity: 0.9 !important;      /* Make arrows more opaque */
+  }
+  
+  /* Make arrow indicators more visible */
+  #main-board svg path[stroke] {
+    stroke-width: 3 !important; /* Make arrows thicker */
+    opacity: 0.9 !important;    /* Make arrows more opaque */
+  }
+  
+  /* Board inner container for better mobile layout */
+  .board-inner-container {
+    margin: 0 !important;
+    width: 100%;
+    height: auto;
+    padding: 0 !important;
+    overflow: hidden; /* Prevent overflow */
+  }
+  
+  /* Remove board decorative elements on very small screens to maximize space */
+  .chessboard-container .square-light::before,
+  .chessboard-container .square-dark::before {
+    opacity: 0.03; /* Reduce texture opacity */
+  }
+  
+  /* Maximize piece visibility */
+  .chessboard-container .piece {
+    transform-origin: center;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.7)) contrast(1.2) brightness(1.1);
+    -webkit-filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.7)) contrast(1.2) brightness(1.1);
+  }
+}
+
+/* Enhance touch support for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  .chessboard-container .piece:active {
+    transform: scale(1.1);
+    filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.6));
+  }
+  
+  /* Remove hover effects that don't work well on touch devices */
+  .chessboard-container .piece:hover {
+    filter: none;
+    transform: none;
+  }
+}
+
+/* For very small screens (portrait phones) */
+@media (max-width: 360px) {
+  .chessboard-container {
+    margin: 0 auto;
+    border-width: 3px;
+  }
+  
+  /* Make coordinate labels more compact on small screens */
+  .coordinate-dark, .coordinate-light {
+    font-size: 0.7rem !important; 
+  }
+}
+
+/* For landscape mode on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .chessboard-container {
+    max-height: 75vh;
+    max-width: 75vh;
+    overflow: hidden; /* Prevent overflow */
+  }
+  
+  .board-inner-container {
+    margin: 0 !important;
+    width: 100%;
+    height: auto;
+    padding: 0 !important;
+    overflow: hidden; /* Prevent overflow */
   }
 }
 
@@ -115,6 +293,9 @@
   font-family: 'Crimson Text', serif;
   font-size: 1.1rem;
   letter-spacing: 0.5px;
+  box-sizing: border-box; /* Include padding in width calculation */
+  max-width: 90%; /* Ensure it doesn't exceed container width */
+  width: auto;
 }
 
 .thinking-spinner {
@@ -156,4 +337,146 @@
   color: #8B4513 !important;
   font-family: 'Crimson Text', serif;
   font-weight: bold;
+}
+
+/* Mobile-friendly promotion UI */
+.promotion-ui {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(20, 20, 20, 0.9);
+  border: 2px solid #DAA520;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+  animation: fadeIn 0.2s ease-out;
+  box-sizing: border-box; /* Include padding in width calculation */
+  max-width: 90%; /* Ensure it doesn't exceed container width */
+  width: auto;
+}
+
+.promotion-pieces {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.promotion-piece {
+  font-size: 3rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ebd8b7;
+  border-radius: 6px;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.promotion-piece:hover {
+  transform: scale(1.1);
+  background-color: #f7e9cf;
+}
+
+.promotion-cancel {
+  padding: 8px 15px;
+  background-color: #8B4513;
+  color: #ebd8b7;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Crimson Text', serif;
+  transition: background-color 0.2s;
+}
+
+.promotion-cancel:hover {
+  background-color: #a0522d;
+}
+
+/* Responsive styles for promotion UI on mobile */
+@media (max-width: 480px) {
+  .promotion-ui {
+    padding: 10px;
+    width: 90%;
+    max-width: 300px;
+  }
+  
+  .promotion-piece {
+    font-size: 2.5rem;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .promotion-cancel {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 360px) {
+  .promotion-piece {
+    font-size: 2rem;
+    width: 40px;
+    height: 40px;
+    margin: 0 2px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Board inner container for better mobile layout */
+.board-inner-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Include padding in width calculation */
+  overflow: hidden; /* Prevent overflow */
+  aspect-ratio: 1 / 1 !important; /* Force square aspect ratio */
+}
+
+/* Force all ReactChessboard components to maintain perfect square */
+.react-chessboard {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  user-select: none !important;
+}
+
+/* Force all board elements to maintain perfect squares */
+.react-chessboard > div {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden !important;
+}
+
+/* Ensure the chess squares are always perfect squares */
+.chessboard-container .square-light,
+.chessboard-container .square-dark {
+  width: 12.5% !important;
+  height: 12.5% !important;
+  aspect-ratio: 1 / 1 !important;
 }
