@@ -596,10 +596,7 @@ export class ChessEvaluationModel implements AIModel {
   async suggestMove(game: Chess, depth: number = 2): Promise<MoveEvaluation[]> {
     const legalMoves = game.moves({ verbose: true });
     const evaluations: MoveEvaluation[] = [];
-    
-    // Make a deep copy of the game to avoid modifying the original
-    const gameCopy = new Chess(game.fen());
-    const isMaximizing = gameCopy.turn() === 'w';
+    const isMaximizing = game.turn() === 'w';
     
     // Check for immediate threats that need to be addressed
     const currentThreats = detectThreats(game);
@@ -620,6 +617,9 @@ export class ChessEvaluationModel implements AIModel {
       // Create evaluations with a strong preference for the MCTS selected move
       for (const move of legalMoves) {
         try {
+          // Create a fresh game copy for each move to avoid undo issues
+          const gameCopy = new Chess(game.fen());
+          
           // Make the move
           gameCopy.move(move.san);
           
@@ -637,21 +637,21 @@ export class ChessEvaluationModel implements AIModel {
             score,
             depth: 3 // Indicate advanced search depth
           });
-          
-          // Undo the move
-          gameCopy.undo();
         } catch (error) {
           console.error(`Error evaluating move ${move.san}:`, error);
         }
       }
     }
-    // Use opening book if available (no change to this part)
+    // Use opening book if available
     else if (bookPosition && bookPosition.bestMove) {
       console.log("Found opening book move:", bookPosition.bestMove);
       
       // Create evaluations with a preference for the book move
       for (const move of legalMoves) {
         try {
+          // Create a fresh game copy for each move
+          const gameCopy = new Chess(game.fen());
+          
           // Make the move
           gameCopy.move(move.san);
           
@@ -672,9 +672,6 @@ export class ChessEvaluationModel implements AIModel {
             score: score,
             depth: 0 // From opening book
           });
-          
-          // Undo the move
-          gameCopy.undo();
         } catch (error) {
           console.error(`Error evaluating move ${move.san}:`, error);
         }
@@ -691,6 +688,9 @@ export class ChessEvaluationModel implements AIModel {
         
         for (const move of batch) {
           try {
+            // Create a fresh game copy for this move
+            const gameCopy = new Chess(game.fen());
+            
             // Make the move
             gameCopy.move(move.san);
             
@@ -722,9 +722,6 @@ export class ChessEvaluationModel implements AIModel {
               depth: 1
             });
             
-            // Undo the move
-            gameCopy.undo();
-            
           } catch (error) {
             console.error(`Error evaluating move ${move.san}:`, error);
           }
@@ -748,6 +745,9 @@ export class ChessEvaluationModel implements AIModel {
       
       for (const move of legalMoves) {
         try {
+          // Create a fresh game copy for this move
+          const gameCopy = new Chess(game.fen());
+          
           // Make the move
           gameCopy.move(move.san);
           
@@ -778,9 +778,11 @@ export class ChessEvaluationModel implements AIModel {
             }
             
           } else {
+            // Create a new minimax context to avoid state conflicts
+            const minimaxGame = new Chess(gameCopy.fen());
             // Minimax with limited depth
             score = await this.minimax(
-              gameCopy, 
+              minimaxGame, 
               effectiveDepth - 1, 
               -Infinity, 
               Infinity, 
@@ -794,9 +796,6 @@ export class ChessEvaluationModel implements AIModel {
             score: score,
             depth: effectiveDepth
           });
-          
-          // Undo the move
-          gameCopy.undo();
         } catch (error) {
           console.error(`Error evaluating move ${move.san}:`, error);
         }
@@ -879,40 +878,34 @@ export class ChessEvaluationModel implements AIModel {
       return 0;
     });
     
-    // Temporary game copy for making/undoing moves in case we need to evaluate threats
-    let tempGame: Chess | null = null;
-    
     if (isMaximizing) {
       let maxEval = -Infinity;
       
       for (const move of moves) {
-        // Make the move
-        game.move(move);
+        // Create a fresh copy of the game for each move evaluation
+        const gameCopy = new Chess(game.fen());
         
-        // Check for immediate danger at higher depths (more thorough search)
+        // Make the move
+        gameCopy.move(move);
+        
+        // Check for immediate danger
         let moveEval;
         if (depth >= 2) {
-          // Create temp game if needed
-          if (!tempGame) tempGame = new Chess(game.fen());
-          
           // Detect if this move creates immediate threats to our pieces
-          const threats = detectThreats(game);
+          const threats = detectThreats(gameCopy);
           const hangingValue = threats.hangingPieces
             .filter(p => p.color === 'w')
             .reduce((sum, p) => sum + p.pieceValue, 0);
           
           // Apply safety penalty for hanging pieces
-          moveEval = await this.minimax(game, depth - 1, alpha, beta, false);
+          moveEval = await this.minimax(gameCopy, depth - 1, alpha, beta, false);
           if (hangingValue > 0) {
             moveEval -= hangingValue * 0.7; // Significant but not overwhelming penalty
           }
         } else {
           // Normal minimax for low depths
-          moveEval = await this.minimax(game, depth - 1, alpha, beta, false);
+          moveEval = await this.minimax(gameCopy, depth - 1, alpha, beta, false);
         }
-        
-        // Undo the move
-        game.undo();
         
         // Update max evaluation and alpha
         maxEval = Math.max(maxEval, moveEval);
@@ -929,33 +922,30 @@ export class ChessEvaluationModel implements AIModel {
       let minEval = Infinity;
       
       for (const move of moves) {
-        // Make the move
-        game.move(move);
+        // Create a fresh copy of the game for each move evaluation
+        const gameCopy = new Chess(game.fen());
         
-        // Check for immediate danger at higher depths
+        // Make the move
+        gameCopy.move(move);
+        
+        // Check for immediate danger
         let moveEval;
         if (depth >= 2) {
-          // Create temp game if needed
-          if (!tempGame) tempGame = new Chess(game.fen());
-          
           // Detect if this move creates immediate threats to our pieces
-          const threats = detectThreats(game);
+          const threats = detectThreats(gameCopy);
           const hangingValue = threats.hangingPieces
             .filter(p => p.color === 'b')
             .reduce((sum, p) => sum + p.pieceValue, 0);
           
           // Apply safety penalty for hanging pieces
-          moveEval = await this.minimax(game, depth - 1, alpha, beta, true);
+          moveEval = await this.minimax(gameCopy, depth - 1, alpha, beta, true);
           if (hangingValue > 0) {
             moveEval += hangingValue * 0.7; // Safety penalty (positive for black advantage)
           }
         } else {
           // Normal minimax for low depths
-          moveEval = await this.minimax(game, depth - 1, alpha, beta, true);
+          moveEval = await this.minimax(gameCopy, depth - 1, alpha, beta, true);
         }
-        
-        // Undo the move
-        game.undo();
         
         // Update min evaluation and beta
         minEval = Math.min(minEval, moveEval);

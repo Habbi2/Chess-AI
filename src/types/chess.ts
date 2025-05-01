@@ -50,6 +50,7 @@ export interface GameState {
   selectedModelMetadata: ModelMetadata; // Changed from selectedModel: AIModel
   thinking: boolean;
   searchDepth: number;
+  undoPerformed: boolean; // Track when an undo operation was performed
 }
 
 export type GameAction =

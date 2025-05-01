@@ -62,7 +62,8 @@ const initialGameState: GameState = {
   heatmaps: {},
   selectedModelMetadata: availableModels[0],
   thinking: false,
-  searchDepth: 1 // Reduced from 2 for better performance
+  searchDepth: 1, // Reduced from 2 for better performance
+  undoPerformed: false
 };
 
 // Game reducer to handle state updates
@@ -83,7 +84,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         game: newGame,
         history: [...state.history, newPosition],
-        currentPosition: newPosition
+        currentPosition: newPosition,
+        undoPerformed: false // Reset the undoPerformed flag when a move is made
       };
     }
     
@@ -92,17 +94,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         return state; // Can't undo from starting position
       }
       
-      const newGame = new Chess(state.game.fen());
-      newGame.undo();
-      
+      // Create a new game instance from the previous position instead of using undo
       const newHistory = state.history.slice(0, -1);
       const newPosition = newHistory[newHistory.length - 1];
+      const newGame = new Chess(newPosition.fen);
       
       return {
         ...state,
         game: newGame,
         history: newHistory,
-        currentPosition: newPosition
+        currentPosition: newPosition,
+        undoPerformed: true // Set the flag to indicate undo was performed
       };
     }
     
@@ -363,8 +365,8 @@ function App() {
     // Only proceed if AI plays black is enabled
     if (!aiPlaysBlack || !modelInitialized) return;
     
-    // Check if it's black's turn
-    if (state.currentPosition.turn === 'b' && !state.thinking) {
+    // Check if it's black's turn and no undo was just performed
+    if (state.currentPosition.turn === 'b' && !state.thinking && !state.undoPerformed) {
       const makeAiMove = async () => {
         const currentFen = state.currentPosition.fen;
         
@@ -400,7 +402,7 @@ function App() {
       
       makeAiMove();
     }
-  }, [state.currentPosition, state.evaluations, state.thinking, aiPlaysBlack, state.game, modelInitialized]);
+  }, [state.currentPosition, state.evaluations, state.thinking, aiPlaysBlack, state.game, modelInitialized, state.undoPerformed]);
 
   // Get heatmap when position or selected heatmap type changes
   useEffect(() => {
