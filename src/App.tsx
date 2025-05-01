@@ -577,6 +577,9 @@ function App() {
         <p>
           Chess AI - Simplified version for better performance
         </p>
+        <p>
+          Website by <a href="https://www.habbiwebdesign.site/" target="_blank" rel="noopener noreferrer">Habbi Web Design</a>
+        </p>
       </footer>
     </div>
   );

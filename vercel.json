@@ -4,6 +4,11 @@
   "outputDirectory": "dist",
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+    { "src": "/(.*)", "dest": "/index.html" },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml"
+    }
+  ],
+  "version": 2
 }
