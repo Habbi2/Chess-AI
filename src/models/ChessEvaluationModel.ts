@@ -536,7 +536,12 @@ export class ChessEvaluationModel implements AIModel {
       
       // Scale evaluation back to centipawns and blend with heuristic
       const scaledEvaluation = result * 20.0;
-      const blendedEvaluation = 0.7 * scaledEvaluation + 0.3 * heuristicEval;
+      
+      // Use the blendFactor to control how much to blend neural network with heuristic
+      // Higher blendFactor means more neural network influence
+      const neuralNetworkWeight = this.blendFactor;
+      const heuristicWeight = 1 - neuralNetworkWeight;
+      const blendedEvaluation = (neuralNetworkWeight * scaledEvaluation) + (heuristicWeight * heuristicEval);
       
       // Cache the result to avoid recalculation
       this.evaluationCache.set(fen, blendedEvaluation);
@@ -603,7 +608,45 @@ export class ChessEvaluationModel implements AIModel {
     
     // Check if we can use opening book first (fastest option)
     const bookPosition = lookupPosition(game.fen());
-    if (bookPosition && bookPosition.bestMove) {
+    
+    // If advanced search is enabled and model is reinforcement learning based, 
+    // prefer using MCTS for more sophisticated search
+    if (this.useAdvancedSearch && this.trainingMethod === 'reinforcement' && !bookPosition) {
+      console.log("Using Monte Carlo Tree Search for advanced evaluation");
+      
+      // Run MCTS to find the best move
+      const bestMove = await this.monteCarloTreeSearch(game, this.mctsIterations, this.mctsTimeLimit);
+      
+      // Create evaluations with a strong preference for the MCTS selected move
+      for (const move of legalMoves) {
+        try {
+          // Make the move
+          gameCopy.move(move.san);
+          
+          // Evaluate the position
+          let score = await this.evaluatePosition(gameCopy.fen());
+          
+          // Boost the MCTS selected move score
+          if (move.san === bestMove) {
+            score += isMaximizing ? 1.0 : -1.0; // Strong preference for MCTS move
+          }
+          
+          // Add to evaluations
+          evaluations.push({
+            move: move.san,
+            score,
+            depth: 3 // Indicate advanced search depth
+          });
+          
+          // Undo the move
+          gameCopy.undo();
+        } catch (error) {
+          console.error(`Error evaluating move ${move.san}:`, error);
+        }
+      }
+    }
+    // Use opening book if available (no change to this part)
+    else if (bookPosition && bookPosition.bestMove) {
       console.log("Found opening book move:", bookPosition.bestMove);
       
       // Create evaluations with a preference for the book move
@@ -693,8 +736,10 @@ export class ChessEvaluationModel implements AIModel {
     }
     // For simpler positions, use minimax with threat detection
     else {
-      console.log("Using minimax with threat detection");
-      const effectiveDepth = Math.min(depth, 2); // Cap depth at 2 for performance
+      // If advanced search is enabled, use deeper minimax search
+      const effectiveDepth = this.useAdvancedSearch ? Math.min(depth, this.minimaxDepth) : Math.min(depth, 2);
+      
+      console.log(`Using minimax with threat detection (depth: ${effectiveDepth})`);
       
       // If we have urgent threats, prioritize moves that resolve them
       if (urgentThreatsExist) {
