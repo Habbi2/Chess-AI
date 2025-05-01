@@ -213,6 +213,8 @@ function App() {
   const [state, dispatch] = useReducer(gameReducer, initialGameState);
   const [selectedHeatmapType, setSelectedHeatmapType] = useState<HeatmapType['type']>('control');
   const [showHints, setShowHints] = useState(false);
+  // Keeping this for future training status implementation
+  // @ts-ignore - Will be used in future feature
   const [trainingStatus, setTrainingStatus] = useState<string | null>(null);
   const [evaluationHistory, setEvaluationHistory] = useState<{position: ChessPosition, evaluation: number}[]>([]);
   const [aiPlaysBlack, setAiPlaysBlack] = useState(true);

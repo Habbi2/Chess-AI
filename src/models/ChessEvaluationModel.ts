@@ -172,8 +172,6 @@ export function evaluatePositionHeuristic(fen: string): number {
         
         // Check central square control
         if (centralSquares.includes(squareName)) {
-          // Count attacks on central squares
-          const attacks = calculateAttacksOnSquare(game, squareName);
           if (square.color === 'w') {
             centralControl.white++;
           } else {
@@ -234,7 +232,6 @@ export function evaluatePositionHeuristic(fen: string): number {
   const centralControlBonus = (centralControl.white - centralControl.black) * 0.1;
   
   // Mobility bonus (number of legal moves)
-  const gameCopy = new Chess(fen);
   const mobilityBonus = game.moves().length * 0.01 * (game.turn() === 'w' ? 1 : -1);
   
   // Add a small bonus for the side to move

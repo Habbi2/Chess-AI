@@ -17,16 +17,6 @@ const EvaluationGraph: React.FC<EvaluationGraphProps> = ({
   height = 200
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  
-  // Function to map evaluation scores to visual representation
-  const mapScore = (score: number): number => {
-    // Clamp extreme values for better visualization
-    const clampedScore = Math.max(Math.min(score, 10), -10);
-    
-    // Map to y coordinate (height/2 is the center line)
-    // Negative scores (black advantage) go up, positive (white advantage) go down
-    return height / 2 - (clampedScore * height / 20);
-  };
 
   useEffect(() => {
     if (!svgRef.current || history.length === 0) return;
@@ -89,7 +79,7 @@ const EvaluationGraph: React.FC<EvaluationGraphProps> = ({
     
     // Create the line generator
     const line = d3.line<{position: ChessPosition, evaluation: number}>()
-      .x((d, i) => xScale(i))
+      .x((_, i) => xScale(i))
       .y(d => yScale(d.evaluation))
       .curve(d3.curveMonotoneX);
     
@@ -107,10 +97,10 @@ const EvaluationGraph: React.FC<EvaluationGraphProps> = ({
       .enter()
       .append('circle')
       .attr('class', 'dot')
-      .attr('cx', (d, i) => xScale(i))
+      .attr('cx', (_, i) => xScale(i))
       .attr('cy', d => yScale(d.evaluation))
       .attr('r', 4)
-      .attr('fill', (d, i) => i === history.length - 1 ? 'red' : 'steelblue')
+      .attr('fill', (_, i) => i === history.length - 1 ? 'red' : 'steelblue')
       .append('title') // Add tooltip
       .text(d => `Move ${d.position.moveNumber}: ${d.evaluation > 0 ? '+' : ''}${d.evaluation.toFixed(2)}`);
       

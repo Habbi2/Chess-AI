@@ -15,7 +15,7 @@ let isModelInitialized = false;
 /**
  * Initialize the model
  */
-export async function initModel(modelMetadata: ModelMetadata, modelPath?: string): Promise<void> {
+export async function initModel(modelMetadata: ModelMetadata): Promise<void> {
   if (isModelInitialized && model) {
     return Promise.resolve();
   }
